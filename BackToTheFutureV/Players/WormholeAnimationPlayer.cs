@@ -136,6 +136,10 @@ namespace BackToTheFutureV
             {
                 Props.Coils?.Dispose();
                 Props.Coils = new AnimateProp(Constants.CoilsModel, Vehicle, Vector3.Zero, Vector3.Zero);
+                Props.Coils.SpawnProp();
+                Props.Coils.Visible = false;
+                Props.SeparatedCoils.SpawnProp();
+                Props.SeparatedCoils.Visible = false;
             }
         }
 
@@ -212,7 +216,7 @@ namespace BackToTheFutureV
             numOfProps = FusionUtils.Lerp(1, 11, by);
 
             // Delete all other props
-            Props.SeparatedCoils?.Delete();
+            Props.SeparatedCoils.Visible = false;
 
             if (Properties.ReactorState != ReactorState.Closed)
             {
@@ -225,7 +229,7 @@ namespace BackToTheFutureV
 
                 Mods.OffCoils = ModState.Off;
 
-                Props.Coils?.SpawnProp();
+                Props.Coils.Visible = true;
             }
             else
             {
@@ -233,10 +237,10 @@ namespace BackToTheFutureV
 
                 foreach (int propindex in propsToBeSpawned)
                 {
-                    Props.SeparatedCoils[propindex].SpawnProp();
+                    Props.SeparatedCoils[propindex].Visible = true;
                 }
 
-                // Set next flicker 
+                // Set next flicker
                 _nextFlicker = Game.GameTime + FusionUtils.Random.Next(30, 60);
             }
         }
@@ -256,11 +260,11 @@ namespace BackToTheFutureV
             _hasStartedWormhole = false;
 
             // Spawn the coil model
-            if (Mods.WormholeType != WormholeType.BTTF3 && Properties.ReactorState == ReactorState.Closed)
+            if (Mods.IsDMC12 && Mods.WormholeType != WormholeType.BTTF3 && Properties.ReactorState == ReactorState.Closed)
             {
                 Mods.OffCoils = ModState.Off;
 
-                Props.Coils?.SpawnProp();
+                Props.Coils.Visible = true;
             }
 
             /*if (Constants.DeluxoProto)
@@ -277,9 +281,12 @@ namespace BackToTheFutureV
             _hasStartedWormhole = false;
             numOfProps = 0;
 
-            Props.Coils?.Delete();
+            if (Mods.IsDMC12)
+            {
+                Props.Coils.Visible = false;
 
-            Props.SeparatedCoils?.Delete();
+                Props.SeparatedCoils.Visible = false;
+            }
 
             Mods.GlowingEmitter = ModState.Off;
 
@@ -309,6 +316,11 @@ namespace BackToTheFutureV
 
         public override void Tick()
         {
+            if (Mods.IsDMC12 && numOfProps == default && Props.SeparatedCoils.Visible)
+            {
+                Props.SeparatedCoils.Visible = false;
+            }
+
             if (!IsPlaying)
             {
                 return;

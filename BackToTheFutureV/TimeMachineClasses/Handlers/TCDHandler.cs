@@ -71,6 +71,8 @@ namespace BackToTheFutureV
 
             previousSlot = new TCD3DRowHandler("yellow", timeMachine);
             previousSlot.SetVisible(false);
+            ScaleformsHandler.GUI.SetDiodeState(false);
+            Properties.HUDProperties.IsTickVisible = false;
 
             Events.OnTimeCircuitsToggle += OnTimeCircuitsToggle;
             Events.OnDestinationDateChange += OnDestinationDateChange;
@@ -197,8 +199,11 @@ namespace BackToTheFutureV
 
                 Properties.HUDProperties.IsTickVisible = false;
 
-                Props.TickingDiodes?.Delete();
-                Props.TickingDiodesOff?.SpawnProp();
+                if (Mods.IsDMC12)
+                {
+                    Props.TickingDiodes.Visible = false;
+                    Props.TickingDiodesOff.Visible = true;
+                }
 
                 Events.SetSIDLedsState?.Invoke(false);
             }
@@ -308,16 +313,16 @@ namespace BackToTheFutureV
             {
                 if (Properties.AreTimeCircuitsOn)
                 {
-                    if (!IsDoingTimedVisible && Props.DiodesOff.IsSpawned)
+                    if (!IsDoingTimedVisible && Props.DiodesOff.Visible)
                     {
-                        Props.DiodesOff?.Delete();
+                        Props.DiodesOff.Visible = false;
                     }
                 }
                 else
                 {
-                    if (!IsDoingTimedVisible && !Props.DiodesOff.IsSpawned)
+                    if (!IsDoingTimedVisible && !Props.DiodesOff.Visible)
                     {
-                        Props.DiodesOff?.SpawnProp();
+                        Props.DiodesOff.Visible = true;
                     }
                 }
             }
@@ -489,10 +494,10 @@ namespace BackToTheFutureV
         {
             if (Game.GameTime > nextTick)
             {
-                if (Vehicle != null && Vehicle.IsVisible)
+                if (Vehicle != null && Vehicle.IsVisible && Mods.IsDMC12)
                 {
-                    Props.TickingDiodes?.SetState(currentState);
-                    Props.TickingDiodesOff?.SetState(!currentState);
+                    Props.TickingDiodes.Visible = currentState;
+                    Props.TickingDiodesOff.Visible = !currentState;
                 }
 
                 ScaleformsHandler.GUI.SetDiodeState(currentState);

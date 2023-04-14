@@ -4,6 +4,7 @@ using GTA;
 using GTA.Math;
 using System.Drawing;
 using System.Windows.Forms;
+using static BackToTheFutureV.InternalEnums;
 
 namespace BackToTheFutureV
 {
@@ -29,7 +30,7 @@ namespace BackToTheFutureV
 
             Events.OnTimeCircuitsToggle += OnTimeCircuitsToggle;
             Events.OnScaleformPriority += OnScaleformPriority;
-
+            Events.OnWormholeTypeChanged += OnWormholeTypeChanged;
             Events.OnWormholeStarted += StartTimeTravelEffect;
 
             Events.OnTimeTravelStarted += StartNormalFluxing;
@@ -42,7 +43,7 @@ namespace BackToTheFutureV
             {
                 return;
             }
-            if (Mods.WormholeType == InternalEnums.WormholeType.BTTF3)
+            if (Mods.WormholeType == WormholeType.BTTF3)
             {
                 ScaleformsHandler.FluxCapacitor.CallFunction("START_ORANGE_ANIMATION");
                 Properties.IsFluxDoingOrangeAnim = true;
@@ -57,8 +58,7 @@ namespace BackToTheFutureV
         public void StartNormalFluxing()
         {
             ScaleformsHandler.FluxCapacitor.CallFunction("START_ANIMATION");
-            Props.FluxBlue?.Delete();
-            Props.FluxOrange?.Delete();
+            Props.FluxGlow.Visible = false;
             Properties.IsFluxDoingBlueAnim = false;
             Properties.IsFluxDoingOrangeAnim = false;
         }
@@ -79,6 +79,23 @@ namespace BackToTheFutureV
             {
                 Update();
             }
+        }
+
+        private void OnWormholeTypeChanged()
+        {
+            Props.FluxGlow?.Delete();
+
+            if (Mods.WormholeType != WormholeType.BTTF3)
+            {
+                Props.FluxGlow.SwapModel(ModelHandler.FluxBlueModel);
+            }
+            else
+            {
+                Props.FluxGlow.SwapModel(ModelHandler.FluxOrangeModel);
+            }
+
+            Props.FluxGlow.SpawnProp();
+            Props.FluxGlow.Visible = false;
         }
 
         public override void Tick()
@@ -110,6 +127,11 @@ namespace BackToTheFutureV
                 return;
             }
 
+            if (!Props.FluxGlow.IsSpawned)
+            {
+                Props.FluxGlow.SpawnProp();
+            }
+
             if (Constants.HasScaleformPriority)
             {
                 Scaleforms.FluxCapacitorRT?.Draw();
@@ -125,24 +147,13 @@ namespace BackToTheFutureV
                 FluxOrangeLight.Draw();
             }
 
-            if (Properties.IsFluxDoingBlueAnim && !Props.FluxBlue.IsSpawned)
+            if ((Properties.IsFluxDoingBlueAnim || Properties.IsFluxDoingOrangeAnim) && !Props.FluxGlow.Visible)
             {
-                Props.FluxBlue.SpawnProp();
+                Props.FluxGlow.Visible = true;
             }
-
-            if (!Properties.IsFluxDoingBlueAnim && Props.FluxBlue.IsSpawned)
+            else if (!Properties.IsFluxDoingBlueAnim && !Properties.IsFluxDoingOrangeAnim && Props.FluxGlow.Visible)
             {
-                Props.FluxBlue?.Delete();
-            }
-
-            if (Properties.IsFluxDoingOrangeAnim && !Props.FluxOrange.IsSpawned)
-            {
-                Props.FluxOrange.SpawnProp();
-            }
-
-            if (!Properties.IsFluxDoingOrangeAnim && Props.FluxOrange.IsSpawned)
-            {
-                Props.FluxOrange?.Delete();
+                Props.FluxGlow.Visible = false;
             }
         }
 
@@ -151,8 +162,7 @@ namespace BackToTheFutureV
             if (!Properties.AreTimeCircuitsOn)
             {
                 ScaleformsHandler.FluxCapacitor.CallFunction("STOP_ANIMATION");
-                Props.FluxBlue?.Delete();
-                Props.FluxOrange?.Delete();
+                Props.FluxGlow.Visible = false;
 
                 if (Sounds.FluxCapacitor.IsAnyInstancePlaying)
                 {

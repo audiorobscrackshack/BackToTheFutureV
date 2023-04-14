@@ -57,8 +57,6 @@ namespace BackToTheFutureV
 
             if (vehicle.Model == ModelHandler.DMC12)
             {
-                HoverVehicle.SoftLock = true;
-
                 DMC12 = DMC12Handler.GetDeloreanFromVehicle(vehicle);
 
                 if (DMC12 == null)
@@ -98,7 +96,7 @@ namespace BackToTheFutureV
             registeredHandlers.Add("RailroadHandler", new RailroadHandler(this));
             registeredHandlers.Add("LightningStrikeHandler", new LightningStrikeHandler(this));
 
-            if (Mods.IsDMC12 || Vehicle.Model == ModelHandler.Deluxo /*|| Vehicle.Model == "dproto"*/)
+            if (Mods.IsDMC12 /*|| Vehicle.Model == "dproto"*/)
                 registeredHandlers.Add("FlyingHandler", new FlyingHandler(this));
 
             if (Mods.IsDMC12)
@@ -260,7 +258,7 @@ namespace BackToTheFutureV
                 Events.OnScaleformPriority?.Invoke();
                 if (Mods.SuspensionsType != SuspensionsType.Stock || Mods.Wheel == WheelType.Red)
                 {
-                    Vehicle.Velocity += Vector3.UnitY * 0.3f;
+                    Vehicle.Velocity += Vector3.UnitZ * 0.3f;
                 }
             }
 
@@ -514,16 +512,16 @@ namespace BackToTheFutureV
                 Players.Wormhole.Stop();
             }
 
-            if (Properties.PhotoGlowingCoilsActive && Props.Coils != null && !Props.Coils.IsSpawned)
+            if (Properties.PhotoGlowingCoilsActive && Props.Coils != null && !Props.Coils.Visible)
             {
                 Mods.OffCoils = ModState.Off;
-                Props.Coils.SpawnProp();
+                Props.Coils.Visible = true;
             }
 
-            if (!Properties.PhotoGlowingCoilsActive && Props.Coils != null && Props.Coils.IsSpawned && Properties.TimeTravelPhase != TimeTravelPhase.OpeningWormhole)
+            if (!Properties.PhotoGlowingCoilsActive && Props.Coils != null && Props.Coils.Visible && Properties.TimeTravelPhase != TimeTravelPhase.OpeningWormhole)
             {
                 Mods.OffCoils = ModState.On;
-                Props.Coils.Delete();
+                Props.Coils.Visible = false;
             }
 
             if (Properties.PhotoFluxCapacitorActive && !(Properties.IsFluxDoingBlueAnim || Properties.IsFluxDoingOrangeAnim))
